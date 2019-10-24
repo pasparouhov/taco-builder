@@ -9,10 +9,19 @@ import Col from 'react-bootstrap/Col'
 import Axios from './Axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import Delete from '@material-ui/icons/Delete';
+import ListItemText from "@material-ui/core/ListItemText";
+import IconButton from '@material-ui/core/IconButton';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
 function App() {
 
     const [checked, setChecked] = React.useState([[],[],[],[],[]]);
+    const [error, setError] = React.useState("");
+    const [tacos, setTacos] = React.useState([]);
     const [data, setData] = React.useState({
         baseLayers: [],
         mixins: [],
@@ -20,6 +29,10 @@ function App() {
         shells: [],
         seasonings: [],
     });
+
+    const generateTacoString = (checked) => {
+        return "Taco!"
+    };
     const handleToggle = (value, index, canHaveMultiple) => () => {
         const arrayCopy = checked.map(item => [...item]);
         if (canHaveMultiple) {
@@ -35,6 +48,17 @@ function App() {
         setChecked(arrayCopy);
     };
 
+    const deleteTacoById = (id) => () => {
+        const tacoCopy = [...tacos];
+        for (let i = 0; i < tacoCopy.length; i++) {
+            if (tacoCopy[i].id === id) {
+                tacoCopy.splice(i, 1);
+                break;
+            }
+        }
+        setTacos(tacoCopy);
+    };
+
     React.useEffect(() => {
         Axios.getData(response => {
             setData(response);
@@ -44,6 +68,16 @@ function App() {
             return data[item].length !== 0;
         }
     );
+    const id = 0;
+    const orderTaco = () => {
+        const tacoWithId = {
+            data: checked,
+            id: tacos.length,
+        };
+        setTacos([...tacos, tacoWithId]);
+        setChecked([[],[],[],[],[]]);
+    };
+
     return (
         <div className="App">
             <header className="App-header">
@@ -101,8 +135,11 @@ function App() {
                         </Col>
                     </Row>
                     <Row>
+                        {error && <p style={{ color: 'red' }}>`Error: ${error}`</p>}
+                    </Row>
+                    <Row>
                         <Col>
-                            <Button variant="contained" color="primary">
+                            <Button variant="contained" color="primary" onClick={orderTaco}>
                                 Order Taco
                             </Button>
                         </Col>
@@ -111,6 +148,35 @@ function App() {
                                 Generate Taco
                             </Button>
                         </Col>
+                    </Row>
+                    <Row className="justify-content-md-center">
+                        <p style={{textAlign: 'center'}}> Your Tacos: </p>
+                    </Row>
+                    <Row className="justify-content-md-center">
+
+                        <div style={{display: 'flex', justifyContent: 'center'}}>
+                        <List key={'taco-list'} width={1/4}>
+                            {tacos.map(taco => {
+                                const labelId = `label-taco-${taco.id}`;
+
+                                return (
+                                    <ListItem key={`taco-${taco.id}-item`}
+                                              role={undefined}
+                                              dense
+                                              alignItems={'center'}>
+
+                                        <ListItemText id={labelId} primary={generateTacoString(taco.data)} />
+                                        <ListItemSecondaryAction>
+                                            <IconButton edge="end" aria-label="delete" onClick={deleteTacoById(taco.id)}>
+                                                <Delete />
+                                            </IconButton>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>
+                                );
+                            })}
+
+                        </List>
+                        </div>
                     </Row>
                     <br/>
                 </Container>

@@ -2,10 +2,6 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-}
-
 .App-header {
   background-color: #282c34;
   display: flex;
@@ -16,12 +12,3 @@
   color: white;
     max-height: 100px;
 }
-
-.App-link {
-  color: #09d3ac;
-}
-
-.ReactTable.-striped.-highlight {
-    width: 22px !important;
-}
-

@@ -42,12 +42,12 @@ class IngredientSelect extends React.Component{
                 <FormHelperText error={true} style={{visibility: error}}>
                     {`Can only have up to ${maxItems} selected`}
                 </FormHelperText>
-                <List>
+                <List key={title}>
                     {data.map(value => {
                         const labelId = `label-${value.slug}`;
 
                         return (
-                            <ListItem key={value}
+                            <ListItem key={`${value.slug}-item`}
                                       role={undefined}
                                       dense
                                       button
