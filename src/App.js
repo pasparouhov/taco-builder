@@ -8,6 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col'
 import Axios from './Axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Button from '@material-ui/core/Button';
 
 function App() {
 
@@ -99,6 +100,19 @@ function App() {
                             />
                         </Col>
                     </Row>
+                    <Row>
+                        <Col>
+                            <Button variant="contained" color="primary">
+                                Order Taco
+                            </Button>
+                        </Col>
+                        <Col>
+                            <Button variant="contained" color="primary">
+                                Generate Taco
+                            </Button>
+                        </Col>
+                    </Row>
+                    <br/>
                 </Container>
                 :
                 <div>
