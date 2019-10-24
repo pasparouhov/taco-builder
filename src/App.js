@@ -18,31 +18,53 @@ import IconButton from '@material-ui/core/IconButton';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
 function App() {
+    const baseLayersName = "baseLayers";
+    const mixinsName = "mixins";
+    const condimentsName = "condiments";
+    const shellsName = "shells";
+    const seasoningsName = "seasonings";
+    const maxItemsMixins = 3;
+    const maxItemsCondiments = 2;
+    const maxItemsSeasonings = 2;
 
-    const [checked, setChecked] = React.useState([[],[],[],[],[]]);
+    const [checked, setChecked] = React.useState({
+        [baseLayersName]: [],
+        [mixinsName]: [],
+        [condimentsName]: [],
+        [shellsName]: [],
+        [seasoningsName]: [],
+    });
     const [error, setError] = React.useState("");
     const [tacos, setTacos] = React.useState([]);
     const [data, setData] = React.useState({
-        baseLayers: [],
-        mixins: [],
-        condiments: [],
-        shells: [],
-        seasonings: [],
+        [baseLayersName]: [],
+        [mixinsName]: [],
+        [condimentsName]: [],
+        [shellsName]: [],
+        [seasoningsName]: [],
     });
 
+    React.useEffect(() => {
+        Axios.getData(response => {
+            setData(response);
+        });
+    }, []);
+
     const generateTacoString = (checked) => {
-        return "Taco!"
+        return "Taco!";
     };
-    const handleToggle = (value, index, canHaveMultiple) => () => {
-        const arrayCopy = checked.map(item => [...item]);
+
+
+    const handleToggle = (value, name, canHaveMultiple) => () => {
+        const arrayCopy = {...checked};
         if (canHaveMultiple) {
-            if (arrayCopy[index].includes(value)) {
-                arrayCopy[index].splice(arrayCopy[index].indexOf(value), 1);
+            if (arrayCopy[name].includes(value)) {
+                arrayCopy[name].splice(arrayCopy[name].indexOf(value), 1);
             } else {
-                arrayCopy[index].push(value);
+                arrayCopy[name].push(value);
             }
         } else {
-            arrayCopy[index] = [value];
+            arrayCopy[name] = [value];
         }
 
         setChecked(arrayCopy);
@@ -59,23 +81,27 @@ function App() {
         setTacos(tacoCopy);
     };
 
-    React.useEffect(() => {
-        Axios.getData(response => {
-            setData(response);
-        });
-    }, []);
     const isLoaded = Object.keys(data).every(item => {
             return data[item].length !== 0;
         }
     );
-    const id = 0;
+
+
+    let id = 0;
     const orderTaco = () => {
         const tacoWithId = {
             data: checked,
-            id: tacos.length,
+            id: id,
         };
+        id++;
         setTacos([...tacos, tacoWithId]);
-        setChecked([[],[],[],[],[]]);
+        setChecked({
+            [baseLayersName]: [],
+            [mixinsName]: [],
+            [condimentsName]: [],
+            [shellsName]: [],
+            [seasoningsName]: [],
+        });
     };
 
     return (
@@ -88,49 +114,54 @@ function App() {
                     <Row>
                         <Col>
                             <IngredientSelect
-                                checked={checked[0]}
+                                checked={checked[shellsName]}
                                 onClick={handleToggle}
                                 title={"Shells"}
                                 index={0}
                                 data={data.shells}
+                                name={shellsName}
                             />
                             <IngredientSelect
-                                checked={checked[3]}
+                                checked={checked[condimentsName]}
                                 onClick={handleToggle}
                                 title={"Condiments"}
                                 index={3}
                                 data={data.condiments}
                                 canHaveMultiple
-                                maxItems={2}
+                                maxItems={maxItemsCondiments}
+                                name={condimentsName}
                             />
                         </Col>
                         <Col>
                             <IngredientSelect
-                                checked={checked[1]}
+                                checked={checked[baseLayersName]}
                                 onClick={handleToggle}
                                 title={"Base Layers"}
                                 index={1}
                                 data={data.baseLayers}
+                                name={baseLayersName}
                             />
                         </Col>
                         <Col>
                             <IngredientSelect
-                                checked={checked[2]}
+                                checked={checked[mixinsName]}
                                 onClick={handleToggle}
                                 title={"Mix Ins"}
                                 index={2}
                                 data={data.mixins}
                                 canHaveMultiple
-                                maxItems={3}
+                                maxItems={maxItemsMixins}
+                                name={mixinsName}
                             />
                             <IngredientSelect
-                                checked={checked[4]}
+                                checked={checked[seasoningsName]}
                                 onClick={handleToggle}
                                 title={"Seasonings"}
                                 index={4}
                                 data={data.seasonings}
                                 canHaveMultiple
-                                maxItems={2}
+                                maxItems={maxItemsSeasonings}
+                                name={seasoningsName}
                             />
                         </Col>
                     </Row>

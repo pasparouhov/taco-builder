@@ -22,10 +22,10 @@ class IngredientSelect extends React.Component{
             checked,
             onClick,
             title,
-            index,
             data,
             canHaveMultiple,
             maxItems,
+            name,
         } = this.props;
         let finalTitle = title;
         if (maxItems) {
@@ -51,7 +51,7 @@ class IngredientSelect extends React.Component{
                                       role={undefined}
                                       dense
                                       button
-                                      onClick={onClick(value.name, index, canHaveMultiple)}>
+                                      onClick={onClick(value.name, name, canHaveMultiple)}>
                                 <ListItemIcon>
                                     { canHaveMultiple ?
                                         <Checkbox
