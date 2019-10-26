@@ -11,13 +11,21 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 
 class IngredientSelect extends React.Component{
     render() {
-
+        /** A JSON object storing some styling things. */
         const classes = {
             root: {
                 width: '100%',
                 maxWidth: 360,
             }
         };
+
+        /** Checked is the currently checked.
+         * onClick is the function ran when a item is clicked.
+         * title is the title for the section.
+         * data is the data pulled from the API.
+         * canHaveMultiple is a self-explanatory boolean.
+         * maxItems is the max number of items that can be selected.
+         * name is the JSON object name for data storage. */
         const {
             checked,
             onClick,
@@ -27,14 +35,13 @@ class IngredientSelect extends React.Component{
             maxItems,
             name,
         } = this.props;
-        let finalTitle = title;
-        if (maxItems) {
-            finalTitle = `${title} (max ${maxItems} items)`
-        }
-        let error = 'hidden';
-        if (maxItems < checked.length) {
-            error = 'visible';
-        }
+
+        /** Change the title if there is a max number of items. */
+        let finalTitle = maxItems ? `${title} (max ${maxItems} items)` : title;
+
+        /** Make error visible if too many items are checked. */
+        let error = maxItems < checked.length ? 'visible' :'hidden';
+
         return (
             <div style={classes.root}>
                 <br/>

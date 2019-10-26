@@ -9,24 +9,29 @@ import Col from 'react-bootstrap/Col'
 import Axios from './Axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
-import List from "@material-ui/core/List";
+import List from '@material-ui/core/List';
 import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Delete from '@material-ui/icons/Delete';
 import ListItemText from "@material-ui/core/ListItemText";
 import IconButton from '@material-ui/core/IconButton';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
+let id = 0;
+
 function App() {
+    /** The names for each of the ingredients. Used for JSON objects. */
     const baseLayersName = "baseLayers";
     const mixinsName = "mixins";
     const condimentsName = "condiments";
     const shellsName = "shells";
     const seasoningsName = "seasonings";
+
+    /** The max number of specific ingredients. */
     const maxItemsMixins = 3;
     const maxItemsCondiments = 2;
     const maxItemsSeasonings = 2;
 
+    /** A state hook to keep track of what has been checked. */
     const [checked, setChecked] = React.useState({
         [baseLayersName]: [],
         [mixinsName]: [],
@@ -34,8 +39,14 @@ function App() {
         [shellsName]: [],
         [seasoningsName]: [],
     });
+
+    /** A state hook to keep track of errors. */
     const [error, setError] = React.useState("");
+
+    /** A state hook to keep track of previously ordered tacos. */
     const [tacos, setTacos] = React.useState([]);
+
+    /** A state hook to store data returned by endpoints. */
     const [data, setData] = React.useState({
         [baseLayersName]: [],
         [mixinsName]: [],
@@ -44,17 +55,42 @@ function App() {
         [seasoningsName]: [],
     });
 
+    /** A effect hook that runs once when the page is loaded.
+     *  Used to get ingredients.  */
     React.useEffect(() => {
         Axios.getData(response => {
             setData(response);
         });
     }, []);
 
+    /** A method used to generate a sentence describing a
+     * taco given checked ingredients.  */
     const generateTacoString = (checked) => {
-        return "Taco!";
+        let result = `${checked[baseLayersName][0]} taco on ${checked[shellsName]} with `;
+        result += `${generateIngredientString('mix in', checked[mixinsName])}, `;
+        result += `${generateIngredientString('seasoning', checked[seasoningsName])}, and `;
+        result += `${generateIngredientString('condiment', checked[condimentsName])}.`;
+        return result;
     };
 
+    /** A method to take a string array and an ingredient name to generate
+     * a descriptor.  */
+    const generateIngredientString = (name, array) => {
+        if (array.length === 1) {
+            return `${array[0]} ${name}`
+        } else {
 
+            let result = "";
+            for (let i = 0; i < array.length - 2; i++) {
+                result += `${array[i]}, `;
+            }
+            result += `${array[array.length - 2]} and ${array[array.length - 1]} ${name}s`;
+            return result;
+        }
+    };
+
+    /** A method passed to IngredientSelect component to keep track of
+     * checked items.  */
     const handleToggle = (value, name, canHaveMultiple) => () => {
         const arrayCopy = {...checked};
         if (canHaveMultiple) {
@@ -70,25 +106,24 @@ function App() {
         setChecked(arrayCopy);
     };
 
-    const deleteTacoById = (id) => () => {
-        const tacoCopy = [...tacos];
-        for (let i = 0; i < tacoCopy.length; i++) {
-            if (tacoCopy[i].id === id) {
-                tacoCopy.splice(i, 1);
-                break;
-            }
-        }
-        setTacos(tacoCopy);
-    };
-
-    const isLoaded = Object.keys(data).every(item => {
-            return data[item].length !== 0;
-        }
-    );
-
-
-    let id = 0;
+    /** A method that takes the current checked state, generates an id
+     * and adds it to the taco storage.  */
     const orderTaco = () => {
+        if (!Object.keys(checked).every(item => checked[item].length > 0)) {
+            setError("Must have at least one of every ingredient");
+            return;
+        }
+        if (checked[condimentsName].length > maxItemsCondiments) {
+            setError(`Max ${maxItemsCondiments} condiments`);
+            return;
+        } else if (checked[mixinsName].length > maxItemsMixins) {
+            setError(`Max ${maxItemsMixins} mixins`);
+            return;
+        } else if (checked[seasoningsName].length > maxItemsSeasonings) {
+            setError(`Max ${maxItemsMixins} mixins`);
+            return;
+        }
+        setError('');
         const tacoWithId = {
             data: checked,
             id: id,
@@ -103,6 +138,44 @@ function App() {
             [seasoningsName]: [],
         });
     };
+
+    /** A method that generates both an id and a random taco, and adds it
+     * to the list of ordered tacos.  */
+    const generateRandomTaco = () => {
+        const taco = {
+            data: {
+                [baseLayersName]: [],
+                [mixinsName]: [],
+                [condimentsName]: [],
+                [shellsName]: [],
+                [seasoningsName]: [],
+            },
+            id: id,
+        };
+        id += 1;
+        const keys = Object.keys(taco.data);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const randomIndex = Math.floor(Math.random() * data[key].length);
+            taco.data[key].push(data[key][randomIndex].name);
+        }
+        setTacos([...tacos, taco]);
+    };
+
+    /** A method designed to take in a taco id and delete that taco. */
+    const deleteTacoById = (id) => () => {
+        const tacoCopy = [...tacos];
+        for (let i = 0; i < tacoCopy.length; i++) {
+            if (tacoCopy[i].id === id) {
+                tacoCopy.splice(i, 1);
+                break;
+            }
+        }
+        setTacos(tacoCopy);
+    };
+
+    /** A check to see if the data has loaded. */
+    const isLoaded = Object.keys(data).every(item => data[item].length !== 0);
 
     return (
         <div className="App">
@@ -165,8 +238,8 @@ function App() {
                             />
                         </Col>
                     </Row>
-                    <Row>
-                        {error && <p style={{ color: 'red' }}>`Error: ${error}`</p>}
+                    <Row className="justify-content-md-center">
+                        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
                     </Row>
                     <Row>
                         <Col>
@@ -175,7 +248,7 @@ function App() {
                             </Button>
                         </Col>
                         <Col>
-                            <Button variant="contained" color="primary">
+                            <Button variant="contained" color="primary" onClick={generateRandomTaco}>
                                 Generate Taco
                             </Button>
                         </Col>
@@ -184,30 +257,34 @@ function App() {
                         <p style={{textAlign: 'center'}}> Your Tacos: </p>
                     </Row>
                     <Row className="justify-content-md-center">
+                        <Col>
+                            <div style={{display: 'flex', justifyContent: 'center'}}>
+                                <List key={'taco-list'} width={1/8}>
+                                    {tacos.map(taco => {
+                                        const labelId = `label-taco-${taco.id}`;
 
-                        <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <List key={'taco-list'} width={1/4}>
-                            {tacos.map(taco => {
-                                const labelId = `label-taco-${taco.id}`;
+                                        return (
+                                            <ListItem key={`taco-${taco.id}-item`}
+                                                      role={undefined}
+                                                      dense
+                                                      alignItems={'center'}>
 
-                                return (
-                                    <ListItem key={`taco-${taco.id}-item`}
-                                              role={undefined}
-                                              dense
-                                              alignItems={'center'}>
+                                                <ListItemText id={labelId} primary={generateTacoString(taco.data)} />
+                                                <ListItemSecondaryAction>
+                                                    <IconButton
+                                                        edge="end"
+                                                        aria-label="delete"
+                                                        onClick={deleteTacoById(taco.id)}>
+                                                        <Delete />
+                                                    </IconButton>
+                                                </ListItemSecondaryAction>
+                                            </ListItem>
+                                        );
+                                    })}
 
-                                        <ListItemText id={labelId} primary={generateTacoString(taco.data)} />
-                                        <ListItemSecondaryAction>
-                                            <IconButton edge="end" aria-label="delete" onClick={deleteTacoById(taco.id)}>
-                                                <Delete />
-                                            </IconButton>
-                                        </ListItemSecondaryAction>
-                                    </ListItem>
-                                );
-                            })}
-
-                        </List>
-                        </div>
+                                </List>
+                            </div>
+                        </Col>
                     </Row>
                     <br/>
                 </Container>

@@ -4,6 +4,8 @@ const baseUrl = "https://ct-tacoapi.azurewebsites.net";
 
 class Axios {
 
+    /** A method in the class Axios to return the data from taco
+     * Api and returned into a JSON object. */
     async getData(callback) {
         const data = {};
         data.baseLayers = (await axios.get(`${baseUrl}/baseLayers`)).data;
